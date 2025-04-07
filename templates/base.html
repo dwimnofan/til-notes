@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="TIL - Track and share what you learn every day"
+    />
+    <title>{% block page_title %}TIL - Today I Learned{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/output.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="//cdn.ckeditor.com/4.22.1/standard/ckeditor.js" defer></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+      .toast-enter {
+        animation: slideIn 0.3s ease-out;
+      }
+      .toast-leave {
+        animation: slideOut 0.3s ease-in;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOut {
+        from {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+      }
+
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 2px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      .ck-content {
+        font-family: system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        word-break: break-word;
+        min-height: 300px;
+      }
+
+      .ck.ck-editor__editable_inline {
+        padding: 0 1rem;
+      }
+
+      /* Hide CKEditor warnings version 4.22.1 */
+      .cke_notifications_area {
+        display: none !important;
+      }
+      div.cke_notification_warning {
+        display: none !important;
+      }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body
+    class="bg-white"
+    x-data="{ 
+      showToast: false,
+      toastMessage: '',
+      toastType: 'success',
+      showToastNotification(message, type = 'success') {
+        this.toastMessage = message;
+        this.toastType = type;
+        this.showToast = true;
+        setTimeout(() => this.showToast = false, 3000);
+      }
+    }"
+    @toast-message.window="showToastNotification($event.detail.message, $event.detail.type)"
+  >
+    <div class="min-h-screen">{% block content %}{% endblock %}</div>
+
+    <!-- Notification -->
+    <div
+      x-show="showToast"
+      x-transition:enter="toast-enter"
+      x-transition:leave="toast-leave"
+      class="fixed bottom-4 right-4 z-50"
+      x-cloak
+    >
+      <div
+        :class="{
+          'bg-black': toastType === 'success',
+          'bg-black': toastType === 'error'
+        }"
+        class="rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0)] border-2 border-black p-4 flex items-center space-x-2"
+      >
+        <i
+          :class="{
+            'fas fa-check-circle': toastType === 'success',
+            'fas fa-exclamation-circle': toastType === 'error'
+          }"
+        ></i>
+        <span x-text="toastMessage"></span>
+      </div>
+    </div>
+  </body>
+</html>

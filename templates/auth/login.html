@@ -1,0 +1,80 @@
+{% extends 'base.html' %} {% block content %}
+<div
+  class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-black/5"
+>
+  <div class="max-w-md w-full">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold tracking-tight">
+        TIL<span class="text-black/60">.</span>
+        <span class="text-sm">Today I Learned</span>
+      </h1>
+      <p class="mt-2 text-lg text-black/60">Track what you learn, every day</p>
+    </div>
+
+    <div
+      class="bg-white p-8 rounded-2xl border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0)] transition-all"
+    >
+      <h2 class="text-2xl font-bold text-black mb-6">Welcome back</h2>
+
+      <form class="space-y-6" method="post">
+        {% csrf_token %} {% for field in form %}
+        <div class="space-y-2">
+          <label
+            for="{{ field.id_for_label }}"
+            class="block text-sm font-medium text-black/60"
+          >
+            {{ field.label }}
+          </label>
+          {% if field.errors %}
+          <div class="text-red-600 text-sm">{{ field.errors }}</div>
+          {% endif %}
+          <input
+            type="{{ field.field.widget.input_type }}"
+            name="{{ field.name }}"
+            id="{{ field.id_for_label }}"
+            class="block w-full px-4 py-3 rounded-lg border-2 border-black/10 bg-white placeholder-black/40 text-black focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black/20 transition-all sm:text-sm"
+          />
+          {% if field.help_text %}
+          <p class="mt-1 text-sm text-black/60">{{ field.help_text }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="pt-2">
+          <button
+            type="submit"
+            class="w-full flex justify-center items-center px-6 py-3 text-sm font-medium rounded-lg text-white bg-black hover:bg-black/90 active:translate-y-0.5 transition-all duration-200 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] focus:outline-none"
+          >
+            <span>Sign in</span>
+            <svg
+              class="ml-2 h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- login info -->
+    <div
+      class="bg-white p-4 rounded-2xl border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0)] transition-all mt-4 text-sm text-black/60 flex flex-col gap-2"
+    >
+      <h2 class="text-lg font-bold text-black mb-2">Superuser</h2>
+      <p>Username: admin</p>
+      <p>Password: 123456789</p>
+
+      <h2 class="text-lg font-bold text-black mb-2">User</h2>
+      <p>Username: nofan</p>
+      <p>Password: hujiko</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

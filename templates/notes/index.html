@@ -1,0 +1,281 @@
+{% extends 'base.html' %} {% block content %}
+<div
+  x-data="{ 
+    sidebarOpen: window.innerWidth >= 768,
+    mobileMenuOpen: false
+  }"
+  @resize.window="sidebarOpen = window.innerWidth >= 768"
+  class="h-screen overflow-hidden bg-gradient-to-br from-white to-black/5"
+>
+  <!-- Mobile menu -->
+  <div
+    x-show="mobileMenuOpen"
+    x-transition:enter="transition-opacity ease-linear duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition-opacity ease-linear duration-300"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm z-20"
+    @click="mobileMenuOpen = false"
+    x-cloak
+  ></div>
+
+  <div class="flex h-screen overflow-hidden">
+    {% include 'partials/sidebar.html' %}
+
+    <!-- Main -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Navbar -->
+      <header
+        class="bg-white/80 backdrop-blur-sm border-b border-black py-4 px-6 flex items-center justify-between sticky top-0 z-10"
+      >
+        <div class="flex items-center space-x-4">
+          <button
+            @click="sidebarOpen = !sidebarOpen"
+            class="text-black/60 hover:text-black p-2 rounded-lg hover:bg-black/5 transition-all duration-200"
+          >
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+          <div class="px-4 py-6 sm:px-0">
+            <div
+              class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8"
+            >
+              <h1 class="text-4xl font-bold text-black tracking-tight">
+                My Notes
+                <span class="block text-lg font-normal text-black/60 mt-1"
+                  >Keep track of what you learn</span
+                >
+              </h1>
+              <a
+                href="{% url 'notes:create' %}"
+                class="inline-flex items-center px-6 py-3 text-sm font-medium rounded-lg text-white bg-black hover:bg-black/90 active:translate-y-0.5 transition-all duration-200 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] focus:outline-none"
+              >
+                <svg
+                  class="-ml-1 mr-2 h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                New Note
+              </a>
+            </div>
+
+            <div
+              x-data="{ 
+              search: '{{ search_query }}',
+              notes: [],
+              filteredNotes: [],
+              init() {
+                this.notes = Array.from(document.querySelectorAll('[data-note]')).map(el => ({
+                  element: el,
+                  title: el.getAttribute('data-title').toLowerCase(),
+                  content: el.getAttribute('data-content').toLowerCase()
+                }));
+                this.filterNotes();
+                this.$watch('search', () => this.filterNotes());
+              },
+              filterNotes() {
+                const searchTerm = this.search.toLowerCase();
+                this.notes.forEach(note => {
+                  if (!searchTerm || note.title.includes(searchTerm) || note.content.includes(searchTerm)) {
+                    note.element.style.display = '';
+                  } else {
+                    note.element.style.display = 'none';
+                  }
+                });
+                
+                // Show/hide empty state
+                const hasVisibleNotes = this.notes.some(note => note.element.style.display !== 'none');
+                document.getElementById('empty-state').style.display = hasVisibleNotes ? 'none' : '';
+              }
+            }"
+              class="bg-white/50 backdrop-blur-sm rounded-2xl border-2 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0)]"
+            >
+              <div class="mb-8">
+                <div class="flex gap-3">
+                  <div class="flex-1">
+                    <label for="search" class="sr-only">Search notes</label>
+                    <div class="relative">
+                      <div
+                        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"
+                      >
+                        <svg
+                          class="h-5 w-5 text-black/40"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <input
+                        type="search"
+                        id="search"
+                        x-model="search"
+                        class="block w-full rounded-lg border-2 border-black/10 pl-12 pr-4 py-3 text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black/20 transition-all bg-white/80"
+                        placeholder="Search notes..."
+                      />
+                    </div>
+                  </div>
+                  <template x-if="search">
+                    <button
+                      @click="search = ''"
+                      type="button"
+                      class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-black/5 active:translate-y-0.5 transition-all duration-200 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] focus:outline-none"
+                    >
+                      Clear
+                    </button>
+                  </template>
+                </div>
+              </div>
+
+              <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {% for note in notes %}
+                <div
+                  data-note
+                  data-title="{{ note.title }}"
+                  data-content="{{ note.content|striptags }}"
+                  class="group bg-white rounded-xl border-2 border-black overflow-hidden hover:shadow-[8px_8px_0px_0px_rgba(0,0,0)] transition-all duration-200"
+                >
+                  <div class="p-6">
+                    <div class="flex justify-between items-start">
+                      <h2
+                        class="text-xl font-semibold text-black group-hover:underline decoration-2"
+                      >
+                        <a href="{% url 'notes:detail' note.slug %}"
+                          >{{ note.title }}</a
+                        >
+                      </h2>
+                      <button
+                        @click.prevent="
+                          fetch('{% url 'notes:favorite' note.slug %}', {
+                            method: 'POST',
+                            headers: {
+                              'X-CSRFToken': '{{ csrf_token }}',
+                            },
+                          })
+                          .then(response => response.json())
+                          .then(data => {
+                            if (data.status === 'success') {
+                              $el.querySelector('.favorite-icon').classList.toggle('text-yellow-500');
+                              $dispatch('toast-message', {
+                                message: data.is_favorite ? 'Added to favorites' : 'Removed from favorites',
+                                type: 'success'
+                              });
+                            }
+                          })
+                        "
+                        class="p-1.5 hover:bg-black/5 rounded-lg transition-colors"
+                      >
+                        <i
+                          class="fas fa-star favorite-icon {% if note.is_favorite %}text-yellow-500{% else %}text-black/20{% endif %} transition-colors"
+                        ></i>
+                      </button>
+                    </div>
+                    <div
+                      class="mt-4 flex items-center justify-between text-sm text-black/60"
+                    >
+                      <div class="flex items-center">
+                        <svg
+                          class="h-4 w-4 mr-2 text-black/40"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        {{ note.created_at|date:"M j, Y" }}
+                      </div>
+                      <div class="flex items-center">
+                        <svg
+                          class="h-4 w-4 mr-2 text-black/40"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        {{ note.reading_time }} min read
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+
+                <div
+                  id="empty-state"
+                  class="col-span-full flex flex-col items-center justify-center py-16"
+                  style="display: none"
+                >
+                  <svg
+                    class="h-16 w-16 text-black/40"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    />
+                  </svg>
+                  <h3 class="mt-4 text-lg font-medium text-black">
+                    No matching notes found
+                  </h3>
+                  <p class="mt-2 text-sm text-black/60">
+                    Try adjusting your search term or create a new note.
+                  </p>
+                  <a
+                    href="{% url 'notes:create' %}"
+                    class="mt-6 inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-black hover:bg-black/90 active:translate-y-0.5 transition-all duration-200 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] focus:outline-none"
+                  >
+                    <svg
+                      class="-ml-1 mr-2 h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Create Note
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+{% endblock %}

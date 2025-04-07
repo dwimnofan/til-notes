@@ -1,0 +1,122 @@
+{% extends 'base.html' %} {% block page_title %} {% if form.instance.pk %}Edit
+Note{% else %}New Note{% endif %} {% endblock %} {% block extra_head %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (typeof CKEDITOR === "undefined") {
+      console.error("CKEditor not loaded");
+    }
+  });
+</script>
+{% endblock %} {% block content %}
+<div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+  <div class="px-4 py-6 sm:px-0">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-black tracking-tight">
+        {% if form.instance.pk %}Edit Note{% else %}New Note{% endif %}
+      </h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+
+      <div>
+        <label
+          for="{{ form.title.id_for_label }}"
+          class="block text-sm font-medium text-black"
+          >Title</label
+        >
+        <div class="mt-1">
+          <input
+            type="text"
+            name="{{ form.title.name }}"
+            id="{{ form.title.id_for_label }}"
+            value="{{ form.title.value|default:'' }}"
+            class="block w-full rounded-lg border-2 border-black px-4 py-3 text-black placeholder-black/60 focus:outline-none focus:ring-2 focus:ring-black/20 transition-shadow {% if form.title.errors %}border-red-500{% endif %}"
+            placeholder="Enter note title"
+          />
+          {% if form.title.errors %}
+          <p class="mt-2 text-sm text-red-500">{{ form.title.errors.0 }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div>
+        <label
+          for="{{ form.content.id_for_label }}"
+          class="block text-sm font-medium text-black"
+          >Content</label
+        >
+        <div class="mt-1">
+          <textarea
+            name="{{ form.content.name }}"
+            id="{{ form.content.id_for_label }}"
+            class="block w-full rounded-lg border-2 border-black px-4 py-3 text-black placeholder-black/60 focus:outline-none focus:ring-2 focus:ring-black/20 transition-shadow {% if form.content.errors %}border-red-500{% endif %}"
+          >
+{{ form.content.value|default:'' }}</textarea
+          >
+          {% if form.content.errors %}
+          <p class="mt-2 text-sm text-red-500">{{ form.content.errors.0 }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div>
+        <label
+          for="{{ form.thumbnail.id_for_label }}"
+          class="block text-sm font-medium text-black"
+          >Thumbnail</label
+        >
+        <div class="mt-1">
+          <input
+            type="file"
+            name="{{ form.thumbnail.name }}"
+            id="{{ form.thumbnail.id_for_label }}"
+            class="block w-full rounded-lg border-2 border-black px-4 py-3 text-black placeholder-black/60 focus:outline-none focus:ring-2 focus:ring-black/20 transition-shadow {% if form.thumbnail.errors %}border-red-500{% endif %}"
+            accept="image/*"
+          />
+          {% if form.thumbnail.errors %}
+          <p class="mt-2 text-sm text-red-500">{{ form.thumbnail.errors.0 }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-4">
+        <a
+          href="{% url 'notes:index' %}"
+          class="inline-flex items-center px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-black/5 active:translate-y-0.5 transition-all duration-200 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] focus:outline-none"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          class="inline-flex items-center px-6 py-3 text-sm font-medium rounded-lg text-white bg-black hover:bg-black/90 active:translate-y-0.5 transition-all duration-200 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] focus:outline-none"
+        >
+          {% if form.instance.pk %}Save Changes{% else %}Create Note{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    CKEDITOR.replace("{{ form.content.id_for_label }}", {
+      height: 400,
+      removePlugins: "elementspath,resize",
+      toolbar: [
+        { name: "styles", items: ["Format"] },
+        {
+          name: "basicstyles",
+          items: ["Bold", "Italic", "Strike", "-", "RemoveFormat"],
+        },
+        {
+          name: "paragraph",
+          items: ["NumberedList", "BulletedList", "-", "Blockquote"],
+        },
+        { name: "links", items: ["Link", "Unlink"] },
+        { name: "tools", items: ["Maximize"] },
+      ],
+    });
+  });
+</script>
+{% endblock %}
